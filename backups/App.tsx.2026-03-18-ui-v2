@@ -1,0 +1,97 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RankingCard } from './components/RankingCard';
+import { StatsHeader } from './components/StatsHeader';
+import { mockData } from './data/mockData';
+import type { DailyData } from './data/mockData';
+
+function App() {
+  const [currentData] = useState<DailyData>(mockData);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-primary p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* 头部 */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-6"
+        >
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-zinc-100">
+              门店排行榜
+            </h1>
+            <div className="flex items-center gap-2 mt-1 text-zinc-400">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm font-mono">{currentData.date}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {}}
+              className="p-2 rounded-lg bg-secondary hover:bg-zinc-800 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-zinc-400" />
+            </button>
+            <button
+              onClick={() => {}}
+              className="p-2 rounded-lg bg-secondary hover:bg-zinc-800 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5 text-zinc-400" />
+            </button>
+            <button
+              onClick={handleRefresh}
+              className="p-2 rounded-lg bg-secondary hover:bg-zinc-800 transition-colors"
+            >
+              <RefreshCw className={`w-5 h-5 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </motion.div>
+
+        {/* 统计概览 */}
+        <StatsHeader data={currentData} />
+
+        {/* 排行榜列表 */}
+        <div className="space-y-3">
+          {/* 图例 */}
+          <div className="flex items-center justify-between text-sm text-zinc-500 px-1">
+            <span>共 {currentData.stores.length} 家营业门店</span>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <span className="text-up">↑</span> 排名上升
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="text-down">↓</span> 排名下降
+              </span>
+            </div>
+          </div>
+
+          {/* 门店卡片列表 */}
+          {currentData.stores.map((store, index) => (
+            <RankingCard key={store.storeName} store={store} index={index} />
+          ))}
+        </div>
+
+        {/* 底部 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 pt-4 border-t border-zinc-800 text-center text-xs text-zinc-600"
+        >
+          数据来源：牵牛花系统 · 每日自动更新
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+export default App;

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 · 易惠达排行</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
+      min-height: 100vh;
+      display: flex;
+    }
+    
+    /* 侧边栏 */
+    .sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar-header h1 {
+      font-size: 20px;
+      color: #22c55e;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .sidebar-header h1 span {
+      font-size: 24px;
+    }
+    
+    .user-info {
+      padding: 16px 24px;
+      font-size: 13px;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(34, 197, 94, 0.05);
+    }
+    
+    .user-info strong {
+      color: #22c55e;
+    }
+    
+    .nav-tabs {
+      flex: 1;
+      padding: 16px 12px;
+    }
+    
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 12px;
+      margin-bottom: 4px;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+    
+    .nav-tab.active {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+      color: #22c55e;
+      font-weight: 600;
+    }
+    
+    .nav-tab span {
+      font-size: 18px;
+    }
+    
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar-footer button,
+    .sidebar-footer a {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .sidebar-footer button:hover,
+    .sidebar-footer a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+    }
+    
+    .sidebar-footer .profit-link {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+    
+    .sidebar-footer .logout-btn {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+    
+    .sidebar-footer .logout-btn:hover {
+      background: rgba(248, 113, 113, 0.1);
+    }
+    
+    /* 主内容区 */
+    .main-content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      background: radial-gradient(ellipse at top, rgba(34, 197, 94, 0.03) 0%, transparent 50%);
+    }
+    
+    .tab-panel {
+      display: none;
+    }
+    
+    .tab-panel.active {
+      display: block;
+    }
+    
+    h2 {
+      font-size: 24px;
+      margin-bottom: 24px;
+      color: #f8fafc;
+    }
+    
+    h3 {
+      font-size: 16px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+    }
+    
+    /* 卡片 */
+    .card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    /* 操作栏 */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .action-bar label {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    
+    .action-bar input,
+    .action-bar select {
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+      color: #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    
+    .action-bar input:focus,
+    .action-bar select:focus {
+      outline: none;
+      border-color: #22c55e;
+    }
+    
+    /* 按钮 */
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: #fff;
+    }
+    
+    .btn-success:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+    }
+    
+    .btn-danger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    /* 表格 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    th {
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    td {
+      font-size: 14px;
+    }
+    
+    tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    /* 状态标签 */
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-tag .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    
+    .status-tag.active {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+    
+    .status-tag.active .dot {
+      background: #22c55e;
+    }
+    
+    .status-tag.inactive {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+    
+    .status-tag.inactive .dot {
+      background: #ef4444;
+    }
+    
+    .status-tag.pending {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+    }
+    
+    .status-tag.pending .dot {
+      background: #fbbf24;
+    }
+    
+    /* 新卡片容器 */
+    .new-cards-container {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px dashed rgba(34, 197, 94, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      display: none;
+    }
+    
+    .new-cards-container:has(.new-card) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .new-card {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+      color: #22c55e;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-family: 'SF Mono', monospace;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .new-card:hover {
+      background: rgba(34, 197, 94, 0.3);
+      transform: scale(1.02);
+    }
+    
+    /* 用户选择 */
+    .user-select-section {
+      margin-bottom: 24px;
+    }
+    
+    .user-select-section select {
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+      color: #e2e8f0;
+      border-radius: 10px;
+      width: 240px;
+      font-size: 14px;
+    }
+    
+    .hint {
+      color: #64748b;
+      font-size: 13px;
+      margin: 8px 0 16px;
+    }
+    
+    .quick-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    /* 门店网格 */
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    
+    .store-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .store-item:hover {
+      background: rgba(15, 23, 42, 0.6);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .store-item.selected {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: #22c55e;
+    }
+    
+    .store-item input {
+      width: 18px;
+      height: 18px;
+      accent-color: #22c55e;
+    }
+    
+    .store-item span {
+      font-size: 13px;
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .toast.success {
+      background: rgba(34, 197, 94, 0.9);
+      color: #fff;
+    }
+    
+    .toast.error {
+      background: rgba(239, 68, 68, 0.9);
+      color: #fff;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; min-height: auto; }
+      .main-content { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1><span>🏆</span> 管理后台</h1>
+    </div>
+    <div class="user-info" id="userInfo">加载中...</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="tab1">
+        <span>🎫</span> 邀请卡管理
+      </button>
+      <button class="nav-tab" data-tab="tab2">
+        <span>👥</span> 账号管理
+      </button>
+      <button class="nav-tab" data-tab="tab3">
+        <span>🏪</span> 门店权限
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <a href="profit.html" class="profit-link">📊 利润分析</a>
+      <a href="index.html">🏆 返回排行榜</a>
+      <button class="logout-btn" onclick="logout()">退出登录</button>
+    </div>
+  </div>
+  
+  <!-- 主内容区 -->
+  <div class="main-content">
+    <!-- Tab 1: 邀请卡管理 -->
+    <div class="tab-panel active" id="tab1">
+      <h2>🎫 邀请卡管理</h2>
+      
+      <div class="card">
+        <h3>生成新邀请卡</h3>
+        <div class="action-bar">
+          <label>数量</label>
+          <input type="number" id="cardCount" value="1" min="1" max="50" style="width: 80px;">
+          <label>备注</label>
+          <input type="text" id="cardNote" placeholder="可选" style="width: 200px;">
+          <button class="btn btn-primary" onclick="generateCards()">生成邀请卡</button>
+        </div>
+        <div id="newCardsContainer" class="new-cards-container"></div>
+      </div>
+      
+      <div class="card">
+        <h3>卡片列表</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>卡号</th>
+              <th>权限状态</th>
+              <th>使用者</th>
+              <th>使用时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="cardsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Tab 2: 账号管理 -->
+    <div class="tab-panel" id="tab2">
+      <h2>👥 账号管理</h2>
+      
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>账号</th>
+              <th>姓名</th>
+              <th>权限状态</th>
+              <th>门店权限</th>
+              <th>利润权限</th>
+              <th>注册时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Tab 3: 门店权限 -->
+    <div class="tab-panel" id="tab3">
+      <h2>🏪 门店权限配置</h2>
+      
+      <div class="card">
+        <div class="user-select-section">
+          <select id="userSelect" onchange="loadUserPermissions()">
+            <option value="">-- 请选择用户 --</option>
+          </select>
+        </div>
+        
+        <p class="hint">💡 不选任何门店 = 可查看全部门店</p>
+        
+        <div class="quick-actions">
+          <button class="btn btn-primary btn-sm" onclick="selectAllStores()">全选</button>
+          <button class="btn btn-primary btn-sm" onclick="deselectAllStores()">全不选</button>
+          <button class="btn btn-success" onclick="savePermissions()">保存权限</button>
+        </div>
+        
+        <div class="store-grid" id="storeGrid"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const API = '/ranking/api';
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      location.href = 'login.html';
+    }
+    
+    function authHeader() {
+      return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+    }
+    
+    function formatTime(t) {
+      return t ? t.replace('T', ' ').slice(0, 16) : '-';
+    }
+    
+    function toast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+    
+    async function showUserInfo() {
+      try {
+        const res = await fetch(`${API}/me`, { headers: authHeader() });
+        const data = await res.json();
+        if (data.is_admin) {
+          document.getElementById('userInfo').innerHTML = `👤 <strong>${data.full_name || data.username}</strong> (管理员)`;
+        } else {
+          location.href = 'index.html';
+        }
+      } catch {
+        location.href = 'login.html';
+      }
+    }
+    
+    // Tab 切换
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      };
+    });
+    
+    // 邀请卡管理
+    async function loadCards() {
+      const res = await fetch(`${API}/admin/invite-cards`, { headers: authHeader() });
+      const data = await res.json();
+      document.getElementById('cardsBody').innerHTML = (data.cards || []).map(c => `
+        <tr>
+          <td><code style="color:#22c55e;font-family:'SF Mono',monospace">${c.card_no}</code></td>
+          <td>
+            <span class="status-tag ${c.is_used ? 'inactive' : 'active'}">
+              <span class="dot"></span>${c.is_used ? '已使用' : '未使用'}
+            </span>
+          </td>
+          <td>${c.used_by || '-'}</td>
+          <td>${formatTime(c.used_at)}</td>
+          <td>
+            ${!c.is_used ? `<button class="btn btn-danger btn-sm" onclick="deleteCard('${c.card_no}')">删除</button>` : '-'}
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    async function generateCards() {
+      const count = parseInt(document.getElementById('cardCount').value) || 1;
+      const note = document.getElementById('cardNote').value.trim();
+      
+      const res = await fetch(`${API}/admin/invite-cards`, {
+        method: 'POST',
+        headers: authHeader(),
+        body: JSON.stringify({ count, note })
+      });
+      const data = await res.json();
+      
+      if (data.cards) {
+        document.getElementById('newCardsContainer').innerHTML = data.cards.map(c =>
+          `<span class="new-card" onclick="navigator.clipboard.writeText('${c}')">${c}</span>`
+        ).join('');
+        toast(`成功生成 ${data.cards.length} 张邀请卡`);
+        loadCards();
+      }
+    }
+    
+    async function deleteCard(no) {
+      if (!confirm('确定要删除这张邀请卡吗？')) return;
+      const res = await fetch(`${API}/admin/invite-cards/${no}`, {
+        method: 'DELETE',
+        headers: authHeader()
+      });
+      if (res.ok) {
+        toast('删除成功');
+        loadCards();
+      }
+    }
+    
+    // 账号管理
+    let usersData = [];
+    
+    async function loadUsers() {
+      const res = await fetch(`${API}/admin/users`, { headers: authHeader() });
+      const data = await res.json();
+      usersData = data.users || [];
+      renderUsers();
+      
+      document.getElementById('userSelect').innerHTML = '<option value="">-- 请选择用户 --</option>' +
+        usersData.filter(u => !u.is_admin).map(u =>
+          `<option value="${u.username}">${u.full_name || u.username}</option>`
+        ).join('');
+    }
+    
+    function renderUsers() {
+      document.getElementById('usersBody').innerHTML = usersData.map(u => {
+        const perms = u.store_permissions || [];
+        let permDisplay = '';
+        if (u.is_admin) {
+          permDisplay = '<span style="color:#64748b">管理员</span>';
+        } else if (perms.length === 0) {
+          permDisplay = '<span style="color:#22c55e">全部门店</span>';
+        } else if (perms.length === 1) {
+          permDisplay = '<span title="' + perms[0] + '">' + perms[0] + '</span>';
+        } else {
+          permDisplay = '<span class="perm-count" onclick="showUserPerms(\'' + u.username + '\')" style="color:#3b82f6;cursor:pointer;text-decoration:underline;">' + perms.length + ' 个门店</span>';
+        }
+        return '<tr>' +
+          '<td>' + u.username + '</td>' +
+          '<td>' + (u.full_name || '-') + '</td>' +
+          '<td>' + permDisplay + '</td>' +
+          '<td><span class="status-tag ' + (u.is_active ? 'active' : 'inactive') + '"><span class="dot"></span>' + (u.is_active ? '正常' : '封禁') + '</span></td>' +
+          '<td><span class="status-tag ' + (u.profit_permission ? 'active' : 'pending') + '"><span class="dot"></span>' + (u.profit_permission ? '已开通' : '未开通') + '</span></td>' +
+          '<td>' + formatTime(u.created_at) + '</td>' +
+          '<td>' + (u.is_admin ? '<span style="color:#64748b">管理员</span>' :
+            '<button class="btn ' + (u.is_active ? 'btn-danger' : 'btn-success') + ' btn-sm" onclick="toggleStatus(\'' + u.username + '\',' + (u.is_active ? 0 : 1) + ')">' + (u.is_active ? '封禁' : '解封') + '</button> ' +
+            '<button class="btn ' + (u.profit_permission ? 'btn-danger' : 'btn-success') + ' btn-sm" onclick="toggleProfit(\'' + u.username + '\',' + (u.profit_permission ? 0 : 1) + ')">' + (u.profit_permission ? '关闭利润' : '开通利润') + '</button>') +
+          '</td></tr>';
+      }).join('');
+    }
+
+    function showUserPerms(username) {
+      const user = usersData.find(u => u.username === username);
+      if (!user || !user.store_permissions) return;
+      const perms = user.store_permissions;
+      const html = '<div style="max-height:400px;overflow-y:auto;"><h4 style="margin-bottom:12px;">' + (user.full_name || username) + ' 的门店权限</h4><ul style="margin:0;padding-left:20px;">' + perms.map(p => '<li style="padding:4px 0;">' + p + '</li>').join('') + '</ul></div>';
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay show';
+      modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;';
+      modal.innerHTML = '<div style="background:#1e293b;border-radius:16px;padding:20px;max-width:500px;width:90%;max-height:80vh;">' + html + '<button onclick="this.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 16px;border:none;background:#3b82f6;color:#fff;border-radius:8px;cursor:pointer;">关闭</button></div>';
+      modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+      document.body.appendChild(modal);
+    }
+    
+    async function toggleStatus(username, is_active) {
+      const res = await fetch(`${API}/admin/users/${username}`, {
+        method: 'PATCH',
+        headers: authHeader(),
+        body: JSON.stringify({ is_active })
+      });
+      if (res.ok) {
+        toast(is_active ? '已解封' : '已封禁');
+        loadUsers();
+      }
+    }
+    
+    async function toggleProfit(username, profit_permission) {
+      const res = await fetch(`${API}/admin/users/${username}`, {
+        method: 'PATCH',
+        headers: authHeader(),
+        body: JSON.stringify({ profit_permission })
+      });
+      if (res.ok) {
+        toast(profit_permission ? '已开通利润权限' : '已关闭利润权限');
+        loadUsers();
+      }
+    }
+    
+    // 门店权限
+    let allStores = [];
+    
+    async function loadAllStores() {
+      const res = await fetch(`${API}/admin/all-stores`, { headers: authHeader() });
+      const data = await res.json();
+      allStores = data.stores || [];
+      renderStoreGrid([]);
+    }
+    
+    function renderStoreGrid(selected) {
+      document.getElementById('storeGrid').innerHTML = allStores.map(s => `
+        <div class="store-item ${selected.includes(s) ? 'selected' : ''}" onclick="this.classList.toggle('selected')">
+          <input type="checkbox" ${selected.includes(s) ? 'checked' : ''}>
+          <span>${s}</span>
+        </div>
+      `).join('');
+    }
+    
+    async function loadUserPermissions() {
+      const username = document.getElementById('userSelect').value;
+      if (!username) {
+        renderStoreGrid([]);
+        return;
+      }
+      const user = usersData.find(u => u.username === username);
+      const perms = user?.store_permissions || [];
+      renderStoreGrid(perms);
+    }
+    
+    function selectAllStores() {
+      document.querySelectorAll('.store-item').forEach(el => el.classList.add('selected'));
+      document.querySelectorAll('.store-item input').forEach(cb => cb.checked = true);
+    }
+    
+    function deselectAllStores() {
+      document.querySelectorAll('.store-item').forEach(el => el.classList.remove('selected'));
+      document.querySelectorAll('.store-item input').forEach(cb => cb.checked = false);
+    }
+    
+    async function savePermissions() {
+      const username = document.getElementById('userSelect').value;
+      if (!username) {
+        toast('请选择用户', 'error');
+        return;
+      }
+      const perms = [...document.querySelectorAll('.store-item.selected span')].map(el => el.textContent);
+      const res = await fetch(`${API}/admin/users/${username}`, {
+        method: 'PATCH',
+        headers: authHeader(),
+        body: JSON.stringify({ store_permissions: perms })
+      });
+      if (res.ok) {
+        toast('已保存');
+        loadUsers();
+      }
+    }
+    
+    function logout() {
+      localStorage.removeItem('token');
+      location.href = 'login.html';
+    }
+    
+    // 初始化
+    showUserInfo();
+    loadCards();
+    loadUsers();
+    loadAllStores();
+  </script>
+</body>
+</html>

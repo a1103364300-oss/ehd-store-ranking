@@ -1,0 +1,60 @@
+import { motion } from 'framer-motion';
+import { ShoppingBag, DollarSign, TrendingUp } from 'lucide-react';
+import type { DailyData } from '../data/mockData';
+
+interface StatsHeaderProps {
+  data: DailyData;
+}
+
+export function StatsHeader({ data }: StatsHeaderProps) {
+  const stats = [
+    {
+      icon: ShoppingBag,
+      label: '今日订单',
+      value: data.totalOrders.toLocaleString(),
+      unit: '单',
+      color: 'text-blue-400',
+    },
+    {
+      icon: DollarSign,
+      label: '今日销售',
+      value: `¥${data.totalRevenue.toLocaleString()}`,
+      unit: '',
+      color: 'text-green-400',
+    },
+    {
+      icon: TrendingUp,
+      label: '平均客单价',
+      value: `¥${data.avgPrice.toFixed(2)}`,
+      unit: '',
+      color: 'text-amber-400',
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-3 gap-4 mb-6">
+      {stats.map((stat, index) => (
+        <motion.div
+          key={stat.label}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          className="metric-card"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <stat.icon className={`w-5 h-5 ${stat.color}`} />
+            <span className="text-sm text-zinc-400">{stat.label}</span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-zinc-100 font-mono">
+              {stat.value}
+            </span>
+            {stat.unit && (
+              <span className="text-sm text-zinc-500">{stat.unit}</span>
+            )}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>门店详情</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #050508;
+  --bg-secondary: #0d0d12;
+  --bg-card: #12121a;
+  --bg-elevated: #1a1a24;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --accent-gold: #fbbf24;
+  --accent-gold-dim: rgba(251, 191, 36, 0.15);
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: rgba(59, 130, 246, 0.15);
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+  --font-body: 'Noto Sans SC', -apple-system, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+[data-theme="light"] {
+  --bg-primary: #fafafa;
+  --bg-secondary: #f4f4f5;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-hover: rgba(0, 0, 0, 0.12);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.2s;
+}
+
+.back:hover { color: var(--text-secondary); }
+
+.theme-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 100;
+}
+
+.theme-btn:hover { border-color: var(--border-hover); }
+
+.perm-notice {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  text-align: center;
+  margin: 60px 0;
+}
+
+.perm-notice h2 { color: var(--accent-gold); font-size: 18px; margin-bottom: 12px; }
+.perm-notice p { color: var(--text-secondary); font-size: 14px; }
+
+/* 门店头部 */
+.store-header {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--accent-blue-dim) 100%);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-subtle);
+  animation: slideUp 0.5s ease-out;
+}
+
+.store-header h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.store-header .meta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.rank-big {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.rank-big .num {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -3px;
+  line-height: 1;
+}
+
+.rank-big .unit {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.change-big {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.cup { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+.cdn { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+.cfl { background: var(--bg-elevated); color: var(--text-muted); }
+
+/* 排名对比 */
+.compare-wrap {
+  margin-bottom: 20px;
+  animation: slideUp 0.6s ease-out;
+}
+
+.compare-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-left: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.compare-cards {
+  display: flex;
+  gap: 12px;
+}
+
+.compare-card {
+  flex: 1;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.compare-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.compare-card.current {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--accent-blue-dim) 100%);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.compare-card .rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.compare-card .rank-badge.r1 { background: linear-gradient(135deg, #fbbf24, #b45309); color: #fff; }
+.compare-card .rank-badge.r2 { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+.compare-card .rank-badge.r3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+.compare-card .rank-badge.r-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+.compare-card .rank-badge.r-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+.compare-card .rank-badge.r-gray { background: var(--bg-elevated); color: var(--text-muted); }
+
+.compare-card .store-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compare-card .store-name.current-name { color: var(--accent-blue); }
+
+.compare-card .metrics {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 12px;
+}
+
+/* 指标卡片 */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  animation: slideUp 0.7s ease-out;
+}
+
+.m-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+}
+
+.m-card .lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.m-card .val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.m-card .val.sm { font-size: 18px; }
+
+.m-card .sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 图表 */
+.chart-box {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-subtle);
+  animation: slideUp 0.8s ease-out;
+}
+
+.chart-box h3 {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+canvas { width: 100%; display: block; }
+
+/* 历史排名 */
+.history-box {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  animation: slideUp 0.9s ease-out;
+}
+
+.history-box h3 {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.hist-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.hist-row:last-child { border-bottom: none; }
+
+.hist-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  width: 60px;
+  font-family: var(--font-display);
+}
+
+.hist-rank {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.hist-rank.top1 { background: linear-gradient(135deg, #fbbf24, #b45309); color: #fff; }
+.hist-rank.top2 { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+.hist-rank.top3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+.hist-rank.r-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+.hist-rank.r-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+.hist-rank.r-gray { background: var(--bg-elevated); color: var(--text-muted); }
+
+.hist-bar-wrap {
+  flex: 1;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  height: 4px;
+  overflow: hidden;
+}
+
+.hist-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-blue), #60a5fa);
+  transition: width 0.3s;
+}
+
+.hist-orders {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 50px;
+  text-align: right;
+}
+
+.hist-ch {
+  width: 24px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .compare-cards { flex-direction: column; }
+  .m-card .val { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<button onclick="exportData()" style="position:fixed;top:20px;right:20px;z-index:1000;padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(59,130,246,0.3);">📥 导出数据</button>
+<button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 夜间</button>
+<div class="container">
+  <a class="back" href="index.html">← 返回排行榜</a>
+  <div id="mainContent"></div>
+</div>
+
+<script>
+const API = '/ranking/api';
+let token = localStorage.getItem('token');
+
+if (!token) location.href = 'login.html';
+
+function getSystemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  const btn = document.getElementById('themeBtn');
+  
+  if (theme === 'auto') {
+    root.setAttribute('data-theme', getSystemTheme());
+    btn.innerHTML = '🔄 自动';
+  } else {
+    root.setAttribute('data-theme', theme);
+    btn.innerHTML = theme === 'dark' ? '🌙 夜间' : '☀️ 白天';
+  }
+}
+
+function toggleTheme() {
+  const current = localStorage.getItem('theme') || 'auto';
+  const next = current === 'auto' ? 'light' : current === 'light' ? 'dark' : 'auto';
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+}
+
+(function() {
+  applyTheme(localStorage.getItem('theme') || 'auto');
+})();
+
+function authHeaders() { return { 'Authorization': 'Bearer ' + token }; }
+
+async function apiGet(url) {
+  const r = await fetch(API + url, { headers: authHeaders() });
+  if (r.status === 401) { localStorage.clear(); location.href = 'login.html'; return null; }
+  if (!r.ok) { const d = await r.json().catch(function() { return {}; }); throw new Error(d.detail || '请求失败'); }
+  return r.json();
+}
+
+const params = new URLSearchParams(location.search);
+const storeName = decodeURIComponent(params.get('name') || '');
+const targetDate = params.get('date') || '';
+
+document.title = storeName + ' · 门店详情';
+
+function getRankBadgeClass(rank) {
+  if (rank === 1) return 'r1';
+  if (rank === 2) return 'r2';
+  if (rank === 3) return 'r3';
+  if (rank <= 10) return 'r-blue';
+  if (rank <= 20) return 'r-green';
+  return 'r-gray';
+}
+
+async function load() {
+  const isAdmin = localStorage.getItem('is_admin') === '1';
+  const perms = JSON.parse(localStorage.getItem('store_permissions') || '[]');
+  
+  if (!isAdmin && perms.length > 0 && !perms.includes(storeName)) {
+    document.getElementById('mainContent').innerHTML = 
+      '<div class="perm-notice"><h2>⚠️ 无权查看该门店</h2><p>您没有查看 ' + storeName + ' 的权限</p></div>';
+    return;
+  }
+
+  try {
+    const compareData = await apiGet('/rank-compare?name=' + encodeURIComponent(storeName) + '&date=' + targetDate);
+    if (!compareData || !compareData.current) {
+      document.getElementById('mainContent').innerHTML = 
+        '<div class="store-header"><h1>' + storeName + '</h1><div class="meta">暂无数据</div></div>';
+      return;
+    }
+
+    const { current, neighbors, totalStores } = compareData;
+    document.title = storeName + ' · 第' + current.rank + '名';
+
+    // 获取排名变化
+    const rankingData = await apiGet('/ranking?date=' + targetDate);
+    const storeInfo = rankingData?.stores?.find(function(s) { return s.name === storeName; });
+    
+    let changeHtml = '<span class="change-big cfl">—</span>';
+    if (storeInfo) {
+      const ch = storeInfo.rankChange;
+      if (ch > 0) changeHtml = '<span class="change-big cup">▲ ' + ch + ' 位</span>';
+      else if (ch < 0) changeHtml = '<span class="change-big cdn">▼ ' + Math.abs(ch) + ' 位</span>';
+    }
+
+    // 排名对比
+    let compareHtml = '';
+    if (neighbors.length > 0) {
+      const sortedStores = neighbors.concat([current]).sort(function(a, b) { return a.rank - b.rank; });
+      
+      compareHtml = '<div class="compare-wrap">' +
+        '<div class="compare-title">📊 排名对比（共 ' + totalStores + ' 家门店）</div>' +
+        '<div class="compare-cards">';
+      
+      sortedStores.forEach(function(s) {
+        const isCurrent = s.name === storeName;
+        const rr = s.orders > 0 ? (s.refundOrders / s.orders * 100).toFixed(1) : '0.0';
+        const ntot = s.newCustomers + s.oldCustomers;
+        const np = ntot > 0 ? (s.newCustomers / ntot * 100).toFixed(0) : '0';
+        
+        compareHtml += '<div class="compare-card' + (isCurrent ? ' current' : '') + '">' +
+          '<div class="rank-badge ' + getRankBadgeClass(s.rank) + '">' + s.rank + '</div>' +
+          '<div class="store-name' + (isCurrent ? ' current-name' : '') + '">' + s.name + '</div>' +
+          '<div class="metrics">' +
+            '<span>' + s.orders.toLocaleString() + '单</span>' +
+            '<span>¥' + s.avgPrice + '客单</span>' +
+            '<span>退款' + rr + '%</span>' +
+          '</div>' +
+        '</div>';
+      });
+      
+      compareHtml += '</div></div>';
+    }
+
+    // 指标卡
+    const rr = current.orders > 0 ? (current.refundOrders / current.orders * 100).toFixed(1) : '0.0';
+    const ntot = current.newCustomers + current.oldCustomers;
+    const np = ntot > 0 ? (current.newCustomers / ntot * 100).toFixed(0) : '0';
+    
+    let html = '<div class="store-header">' +
+      '<h1>' + storeName + '</h1>' +
+      '<div class="meta">' + targetDate + ' 日报</div>' +
+      '<div class="rank-big">' +
+        '<div class="num">' + current.rank + '</div>' +
+        '<div class="unit">名</div>' +
+        changeHtml +
+      '</div>' +
+    '</div>' + compareHtml +
+    '<div class="metrics-grid">' +
+      '<div class="m-card"><div class="lbl">有效订单</div><div class="val">' + current.orders.toLocaleString() + '</div></div>' +
+      '<div class="m-card"><div class="lbl">销售额</div><div class="val sm">¥' + current.revenue.toLocaleString() + '</div></div>' +
+      '<div class="m-card"><div class="lbl">客单价</div><div class="val">¥' + current.avgPrice + '</div></div>' +
+      '<div class="m-card"><div class="lbl">退款订单</div><div class="val">' + current.refundOrders + '<span style="font-size:11px;color:var(--text-muted);font-weight:400"> (' + rr + '%)</span></div></div>' +
+      '<div class="m-card"><div class="lbl">新客占比</div><div class="val">' + np + '%</div><div class="sub">新 ' + current.newCustomers + ' · 老 ' + current.oldCustomers + '</div></div>' +
+      '<div class="m-card"><div class="lbl">商家优惠</div><div class="val sm">¥' + current.discount.toLocaleString() + '</div></div>' +
+    '</div>';
+
+    // 历史数据
+    const historyData = await apiGet('/store-history?name=' + encodeURIComponent(storeName));
+    const history = historyData?.history || [];
+
+    if (history.length > 0) {
+      const maxOrders = Math.max.apply(null, history.map(function(h) { return h.orders; }));
+      
+      html += '<div class="chart-box"><h3>📈 近30天订单趋势</h3><canvas id="trendChart" height="100"></canvas></div>';
+      html += '<div class="history-box"><h3>📋 近30天排名历史</h3><div id="historyList"></div></div>';
+      
+      document.getElementById('mainContent').innerHTML = html;
+
+      // 绘制图表
+      setTimeout(function() {
+        const canvas = document.getElementById('trendChart');
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = canvas.offsetWidth * dpr;
+        canvas.height = 100 * dpr;
+        ctx.scale(dpr, dpr);
+        
+        const W = canvas.offsetWidth, H = 100;
+        const pts = history.slice().reverse().map(function(h, i, arr) {
+          return {
+            x: (i / (arr.length - 1)) * (W - 20) + 10,
+            y: H - 20 - ((h.orders / maxOrders) * (H - 35))
+          };
+        });
+        
+        // 填充渐变
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+        grad.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        
+        ctx.beginPath();
+        pts.forEach(function(p, i) { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+        ctx.lineTo(pts[pts.length - 1].x, H);
+        ctx.lineTo(pts[0].x, H);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+        
+        // 折线
+        ctx.beginPath();
+        pts.forEach(function(p, i) { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // 最后点
+        const lp = pts[pts.length - 1];
+        ctx.beginPath();
+        ctx.arc(lp.x, lp.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#60a5fa';
+        ctx.fill();
+
+        // 渲染历史列表
+        const histDiv = document.getElementById('historyList');
+        history.forEach(function(h) {
+          const chHtml = h.orders > (history[history.indexOf(h) + 1]?.orders || h.orders) 
+            ? '<span style="color:#22c55e">▲</span>' 
+            : h.orders < (history[history.indexOf(h) + 1]?.orders || h.orders) 
+            ? '<span style="color:#ef4444">▼</span>' 
+            : '<span style="color:var(--text-muted)">—</span>';
+          const barW = maxOrders > 0 ? Math.round((h.orders / maxOrders) * 100) : 0;
+          const rankClass = h.rank <= 3 ? 'top' + h.rank : h.rank <= 10 ? 'r-blue' : h.rank <= 20 ? 'r-green' : 'r-gray';
+          
+          histDiv.innerHTML += '<div class="hist-row">' +
+            '<div class="hist-date">' + h.date.slice(5) + '</div>' +
+            '<div class="hist-rank ' + rankClass + '">' + (h.rank <= 3 ? ['🥇','🥈','🥉'][h.rank-1] : h.rank) + '</div>' +
+            '<div class="hist-bar-wrap"><div class="hist-bar" style="width:' + barW + '%"></div></div>' +
+            '<div class="hist-orders">' + h.orders.toLocaleString() + '</div>' +
+            '<div class="hist-ch">' + chHtml + '</div>' +
+          '</div>';
+        });
+      }, 50);
+    } else {
+      document.getElementById('mainContent').innerHTML = html;
+    }
+
+  } catch (e) {
+    document.getElementById('mainContent').innerHTML = 
+      '<div class="store-header"><h1>' + storeName + '</h1><div class="meta">加载失败: ' + e.message + '</div></div>';
+  }
+}
+
+load();
+
+async function exportData() {
+  const name = new URLSearchParams(location.search).get('name');
+  if (!name) return;
+  
+  // 默认导出最近30天
+  const end = new Date().toISOString().split('T')[0];
+  const start = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+  
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API}/export/my-data?start_date=${start}&end_date=${end}`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    
+    if (!res.ok) throw new Error('导出失败');
+    
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}_${start}_${end}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('导出失败: ' + e.message);
+  }
+}
+
+</script>
+</body>
+</html>
