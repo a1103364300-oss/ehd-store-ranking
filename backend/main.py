@@ -16,6 +16,13 @@ from passlib.context import CryptContext
 
 DB_PATH = os.path.expanduser('~/ranking_auth.db')
 QNH_DB = os.path.expanduser('~/qnh-data/qnh.db')
+
+# 静态文件目录（本地开发用本地 dist，服务器用服务器路径）
+STATIC_DIR = os.environ.get(
+    "RANKING_STATIC_DIR",
+    "/home/ubuntu/nofx-Metroll/dist/ranking" if os.path.exists("/home/ubuntu/nofx-Metroll/dist/ranking")
+    else os.path.expanduser("~/clawd/projects/store-ranking/dist/ranking")
+)
 SECRET_KEY = "ehd-ranking-secret-2026-xK9mP2nQ"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24 * 7
@@ -747,9 +754,14 @@ def export_my_data(start_date: str = Query(...), end_date: str = Query(...), use
 
 @app.get("/")
 async def index():
-    return FileResponse("/home/ubuntu/nofx-Metroll/dist/ranking/index.html")
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "API only mode. Frontend not available.", "api_docs": "/docs"}
 
-app.mount("/", StaticFiles(directory="/home/ubuntu/nofx-Metroll/dist/ranking", html=True), name="static")
+# 只在静态目录存在时挂载
+if os.path.exists(STATIC_DIR):
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
